@@ -1,50 +1,57 @@
-# Welcome to your Expo app 👋
+# 📝 React Native To-Do List App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A simple, modern **To-Do List mobile app** built using **React Native (Expo)**.  
+Keep track of your tasks, mark them as completed, and never lose your data — everything is saved locally on your device.
 
-## Get started
+---
 
-1. Install dependencies
+## Features Implemented
 
+- **Add Tasks:** Quickly add new tasks using the input at the top.  
+- **View Tasks:** Pending and completed tasks are clearly separated.  
+- **Mark as Completed:** Toggle tasks between pending and completed with a tap.  
+- **Edit Tasks:** Update your task details easily using the edit modal.  
+- **Delete Tasks:** Remove tasks you no longer need.  
+- **Persistent Storage:** All tasks are saved locally using AsyncStorage — your data stays even after closing the app.  
+- **Responsive UI:** Clean and modern design for mobile screens.
+
+---
+
+## Setup & Running the App
+
+Follow these simple steps to get the app running on your phone or emulator:
+
+1. **Install Node.js & npm** (v14 or above recommended) from [nodejs.org](https://nodejs.org).  
+2. **Install Expo CLI** globally (optional, but convenient):  
    ```bash
-   npm install
-   ```
+   npm install -g expo-cli
+Clone the repository or download the project zip to your local machine.
 
-2. Start the app
+Open the project folder in your terminal and install dependencies:
 
-   ```bash
-   npx expo start
-   ```
+     npm install
 
-In the output, you'll find options to open the app in a
+     Start the app using Expo:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+     npx expo start
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+     Run the app:
 
-## Get a fresh project
+     On your phone, scan the QR code with the Expo Go app (iOS/Android).
 
-When you're ready, run:
+     On an emulator, click “Run on Android/iOS simulator” from the Expo CLI.
 
-```bash
-npm run reset-project
-```
+Screenshots
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
+<img width="367" height="731" alt="chrome_rSkEzGrrCQ" src="https://github.com/user-attachments/assets/636661ca-e942-4d55-ae29-70152bfc491a" />
 
-To learn more about developing your project with Expo, look at the following resources:
+<img width="367" height="734" alt="chrome_9xmlPomLPo" src="https://github.com/user-attachments/assets/bb71c1ce-7ea3-4820-ae46-a2f5e0fe5741" />
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Notes
 
-## Join the community
+Tasks are stored under the key @tasks in AsyncStorage.
 
-Join our community of developers creating universal apps.
+Both pending and completed tasks are saved, so you won’t lose anything even if you close the app.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Designed with simplicity and usability in mind for everyday task management.
