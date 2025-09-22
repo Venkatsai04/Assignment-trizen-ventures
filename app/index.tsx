@@ -1,5 +1,5 @@
 // app/index.tsx
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Link } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
@@ -9,53 +9,50 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
+import TaskEditor from "../src/components/TaskEditor";
 import TaskItem from "../src/components/TaskItem";
+import { loadTasks, saveTasks } from "../src/utils/storage";
 
 export default function HomeScreen() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [text, setText] = useState("");
+  const [editingTask, setEditingTask] = useState<any>(null);
 
-  // Load saved tasks
+  // Load tasks on start
   useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        const saved = await AsyncStorage.getItem("tasks");
-        if (saved) setTasks(JSON.parse(saved));
-      } catch (e) {
-        console.log("Error loading tasks", e);
-      }
-    };
-    loadTasks();
+    (async () => {
+      const stored = await loadTasks();
+      if (stored) setTasks(stored);
+    })();
   }, []);
 
-  // Save tasks whenever they change
+  // Save tasks on change
   useEffect(() => {
-    AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+    saveTasks(tasks);
   }, [tasks]);
 
   const addTask = () => {
     if (!text.trim()) return;
     const newTask = { id: Date.now().toString(), text, completed: false };
-    setTasks([...tasks, newTask]);
+    setTasks([newTask, ...tasks]);
     setText("");
   };
 
   const deleteTask = (id: string) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+    setTasks(tasks.filter((t) => t.id !== id));
   };
 
   const toggleTask = (id: string) => {
     setTasks(
-      tasks.map((t) =>
-        t.id === id ? { ...t, completed: !t.completed } : t
-      )
+      tasks.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
     );
   };
 
-  const editTask = (id: string, newText: string) => {
+  const saveEdit = (id: string, newText: string) => {
     setTasks(tasks.map((t) => (t.id === id ? { ...t, text: newText } : t)));
+    setEditingTask(null);
   };
 
   return (
@@ -64,12 +61,15 @@ export default function HomeScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Text style={styles.title}>📝 My To-Do List</Text>
+      <Link href="/completed" style={styles.link}>
+        View Completed →
+      </Link>
 
-      {/* Input Area */}
+      {/* Input Row */}
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}
-          placeholder="Add a new task..."
+          placeholder="Enter a task..."
           value={text}
           onChangeText={setText}
         />
@@ -78,23 +78,52 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Tasks List */}
+      {/* Pending Tasks */}
+      <Text style={styles.sectionTitle}>Pending Tasks</Text>
       <FlatList
-        data={tasks}
+        data={tasks.filter((t) => !t.completed)}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TaskItem
             task={item}
             onDelete={deleteTask}
             onToggle={toggleTask}
-            onEdit={editTask}
+            onEdit={setEditingTask}
           />
         )}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No tasks yet. Add one!</Text>
+          <Text style={styles.emptyText}>No pending tasks!</Text>
         }
-        contentContainerStyle={{ paddingBottom: 40 }}
+        style={styles.taskList}
       />
+
+      {/* Completed Tasks */}
+      <Text style={styles.sectionTitle}>Completed Tasks</Text>
+      <FlatList
+        data={tasks.filter((t) => t.completed)}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TaskItem
+            task={item}
+            onDelete={deleteTask}
+            onToggle={toggleTask}
+            onEdit={setEditingTask}
+          />
+        )}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No completed tasks yet!</Text>
+        }
+        style={styles.taskList}
+      />
+
+      {/* Edit Modal */}
+      {editingTask && (
+        <TaskEditor
+          task={editingTask}
+          onSave={saveEdit}
+          onClose={() => setEditingTask(null)}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -102,47 +131,64 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
     padding: 20,
+    marginTop: 40,
+    backgroundColor: "#f0f4f8",
   },
   title: {
     fontSize: 28,
     fontWeight: "700",
-    marginVertical: 20,
+    marginBottom: 5,
     textAlign: "center",
     color: "#111827",
+  },
+  link: {
+    textAlign: "right",
+    marginBottom: 10,
+    color: "#2563eb",
+    fontWeight: "600",
   },
   inputRow: {
     flexDirection: "row",
     marginBottom: 20,
+    alignItems: "center",
   },
   input: {
     flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#d1d5db",
+    padding: 12,
+    marginRight: 10,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    fontSize: 16,
   },
   addBtn: {
-    marginLeft: 10,
     backgroundColor: "#2563eb",
+    paddingVertical: 12,
+    paddingHorizontal: 18,
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
   },
   addBtnText: {
     color: "#fff",
-    fontSize: 22,
     fontWeight: "700",
+    fontSize: 22,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginVertical: 12,
+    color: "#111827",
+  },
+  taskList: {
+    marginBottom: 20,
   },
   emptyText: {
     textAlign: "center",
-    marginTop: 40,
     color: "#6b7280",
+    marginTop: 10,
     fontSize: 16,
   },
 });
