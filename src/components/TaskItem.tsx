@@ -1,14 +1,13 @@
 import React from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function TaskItem({ task, onDelete, onToggle }: any) {
+export default function TaskItem({ task, onDelete, onToggle, onEdit }: any) {
   return (
     <View style={styles.task}>
       <TouchableOpacity onPress={() => onToggle(task.id)} style={{ flex: 1 }}>
-        <Text style={[styles.text, task.completed && styles.completed]}>
-          {task.text}
-        </Text>
+        <Text style={[styles.text, task.completed && styles.completed]}>{task.text}</Text>
       </TouchableOpacity>
+      {onEdit && <Button title="Edit" onPress={() => onEdit(task)} />}
       <Button title="Delete" onPress={() => onDelete(task.id)} color="red" />
     </View>
   );

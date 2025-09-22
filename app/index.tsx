@@ -1,27 +1,44 @@
+// app/index.tsx
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { Button, FlatList, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import TaskItem from "../src/components/TaskItem";
-import { loadTasks, saveTasks } from "../src/utils/storage";
 
 export default function HomeScreen() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [text, setText] = useState("");
 
+  // Load saved tasks
   useEffect(() => {
-    (async () => {
-      const stored = await loadTasks();
-      if (stored) setTasks(stored);
-    })();
+    const loadTasks = async () => {
+      try {
+        const saved = await AsyncStorage.getItem("tasks");
+        if (saved) setTasks(JSON.parse(saved));
+      } catch (e) {
+        console.log("Error loading tasks", e);
+      }
+    };
+    loadTasks();
   }, []);
 
+  // Save tasks whenever they change
   useEffect(() => {
-    saveTasks(tasks);
+    AsyncStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
 
   const addTask = () => {
-    if (text.trim().length === 0) return;
+    if (!text.trim()) return;
     const newTask = { id: Date.now().toString(), text, completed: false };
-    setTasks([newTask, ...tasks]);
+    setTasks([...tasks, newTask]);
     setText("");
   };
 
@@ -31,47 +48,101 @@ export default function HomeScreen() {
 
   const toggleTask = (id: string) => {
     setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
+      tasks.map((t) =>
+        t.id === id ? { ...t, completed: !t.completed } : t
       )
     );
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>📝 To-Do List</Text>
+  const editTask = (id: string, newText: string) => {
+    setTasks(tasks.map((t) => (t.id === id ? { ...t, text: newText } : t)));
+  };
 
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <Text style={styles.title}>📝 My To-Do List</Text>
+
+      {/* Input Area */}
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}
-          placeholder="Enter a task..."
+          placeholder="Add a new task..."
           value={text}
           onChangeText={setText}
         />
-        <Button title="Add" onPress={addTask} />
+        <TouchableOpacity style={styles.addBtn} onPress={addTask}>
+          <Text style={styles.addBtnText}>＋</Text>
+        </TouchableOpacity>
       </View>
 
+      {/* Tasks List */}
       <FlatList
         data={tasks}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TaskItem task={item} onDelete={deleteTask} onToggle={toggleTask} />
+          <TaskItem
+            task={item}
+            onDelete={deleteTask}
+            onToggle={toggleTask}
+            onEdit={editTask}
+          />
         )}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No tasks yet. Add one!</Text>
+        }
+        contentContainerStyle={{ paddingBottom: 40 }}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, marginTop: 40, backgroundColor: "#f8f8f8" },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
-  inputRow: { flexDirection: "row", marginBottom: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: "#f9fafb",
+    padding: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    marginVertical: 20,
+    textAlign: "center",
+    color: "#111827",
+  },
+  inputRow: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
   input: {
     flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    marginRight: 10,
-    borderRadius: 5,
+    borderColor: "#e5e7eb",
+  },
+  addBtn: {
+    marginLeft: 10,
+    backgroundColor: "#2563eb",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  addBtnText: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "700",
+  },
+  emptyText: {
+    textAlign: "center",
+    marginTop: 40,
+    color: "#6b7280",
+    fontSize: 16,
   },
 });

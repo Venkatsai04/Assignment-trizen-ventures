@@ -4,8 +4,7 @@ const STORAGE_KEY = "@tasks";
 
 export async function saveTasks(tasks: any[]) {
   try {
-    const json = JSON.stringify(tasks);
-    await AsyncStorage.setItem(STORAGE_KEY, json);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
   } catch (e) {
     console.error("Error saving tasks:", e);
   }
